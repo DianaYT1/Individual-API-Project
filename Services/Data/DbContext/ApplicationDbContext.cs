@@ -1,6 +1,4 @@
 ﻿using Microsoft.Data.SqlClient;
-using System;
-using System.Collections.Generic;
 using System.Data;
 using Services.Models;
 using Services.Data.DbManager;
@@ -49,7 +47,7 @@ namespace Services.Data.DbContext
 
             if (existingRecordsCount > 0)
             {
-                // Изпълнение на заявка за актуализация
+               
                 string updateSql = "UPDATE Company SET " +
                           "Name = @Name, " +
                           "Website = @Website, " +
@@ -68,7 +66,7 @@ namespace Services.Data.DbContext
             }
             else
             {
-                // Изпълнение на операция за вмъкване
+                
                 string insertSql = "INSERT INTO Company (OrganizationId, Name, Website, Country, Description, Founded, Industry, NumberOfEmployees) " +
                                    "VALUES (@OrganizationId, @Name, @Website, @Country, @Description, @Founded, @Industry, @NumberOfEmployees)";
 
@@ -94,7 +92,7 @@ namespace Services.Data.DbContext
 
         private string EscapeSingleQuotes(string input)
         {
-            // Заменете всички единични кавички с двойни единични кавички
+           
             return input.Replace("'", "''");
         }
 
@@ -113,7 +111,7 @@ namespace Services.Data.DbContext
 
             if (existingRecordsCount > 0)
             {
-                // Изпълнение на операция за актуализация
+               
                 string updateSql = "UPDATE Country SET Country = @Country, Name = @Name WHERE OrganizationId = @OrganizationId";
 
                 using (SqlCommand command = new SqlCommand(updateSql, connection, transaction))
@@ -124,7 +122,7 @@ namespace Services.Data.DbContext
             }
             else
             {
-                // Изпълнение на операция за вмъкване
+
                 string insertSql = "INSERT INTO Country (OrganizationId, Country, Name) VALUES (@OrganizationId, @Country, @Name)";
 
                 using (SqlCommand command = new SqlCommand(insertSql, connection, transaction))
@@ -141,15 +139,15 @@ namespace Services.Data.DbContext
             command.Parameters.AddWithValue("@Country", EscapeSingleQuotes(model.Country));
             command.Parameters.AddWithValue("@Name", EscapeSingleQuotes(model.Name));
         }
-
-       
-        private object ExecuteScalar(string sql)
+       public void ProcessBatch(List<OrganizationModel> batch, SqlConnection connection, SqlTransaction transaction)
         {
-            using (SqlCommand command = new SqlCommand(sql, connection))
+            batch.ForEach(organization =>
             {
-                return command.ExecuteScalar();
-            }
+                AddCompany(organization, connection, transaction);
+                AddCountry(organization, connection, transaction);
+            });
         }
+
 
         public void Dispose()
         {
@@ -170,23 +168,6 @@ namespace Services.Data.DbContext
                     dataTable.Load(reader);
                     return dataTable;
                 }
-            }
-        }
-
-
-        public void ProcessBatch(List<OrganizationModel> batch, SqlConnection connection, SqlTransaction transaction)
-        {
-            foreach (var organization in batch)
-            {
-                AddCompany(organization, connection, transaction);
-                AddCountry(organization, connection, transaction);
-            }
-        }
-        private void ExecuteNonQuery(string sql)
-        {
-            using (SqlCommand command = new SqlCommand(sql, connection))
-            {
-                command.ExecuteNonQuery();
             }
         }
     }

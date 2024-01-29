@@ -1,6 +1,5 @@
-﻿// OrganizationModel.cs
+﻿
 using CsvHelper.Configuration.Attributes;
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Services.Models
